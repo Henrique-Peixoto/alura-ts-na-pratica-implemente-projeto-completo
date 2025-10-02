@@ -1,12 +1,22 @@
 import { GrupoTransacao } from "./GrupoTransacao.js"
 import { TipoTransacao } from "./TipoTransacao.js"
 import { Transacao } from "./Transacao.js"
+import { ResumoTransacoes } from "./ResumoTransacoes.js"
 
-let saldo: number = JSON.parse(localStorage.getItem('saldo') || '{}') || 0
-let transacoes: Transacao[] = JSON.parse(localStorage.getItem("transacoes") || '[]', (key, value) => {
-    if (key === 'data') return new Date(value)
-    return value
-}) || []
+let saldo: number = 0
+
+// if (localStorage.getItem('saldo') != null) {
+//     saldo = JSON.parse(localStorage.getItem('saldo')!)
+// }
+
+let transacoes: Transacao[] = []
+
+// if (localStorage.getItem('transacoes') != null) {
+//     transacoes = JSON.parse(localStorage.getItem('transacoes')!, (key, value) => {
+//         if (key === 'data') return new Date(value)
+//         return value
+//     })
+// }
 
 function debitar(valor: number): void {
     if (valor <= 0) {
@@ -64,6 +74,30 @@ const Conta = {
         }
 
         return gruposTransacoes
+    },
+
+    getTransacoesPorTipo(): ResumoTransacoes {
+      let resumo: ResumoTransacoes = {
+        totalDepositos: 0,
+        totalPagamentosBoleto: 0,
+        totalTransferencias: 0
+      }
+      
+      for (let transacao of transacoes) {
+        switch(transacao.tipoTransacao) {
+            case TipoTransacao.DEPOSITO:
+                resumo.totalDepositos += transacao.valor
+                break
+            case TipoTransacao.PAGAMENTO_BOLETO:
+                resumo.totalPagamentosBoleto += transacao.valor
+                break
+            case TipoTransacao.TRANSFERENCIA:
+                resumo.totalTransferencias += transacao.valor
+                break
+        }
+      }
+
+      return resumo
     },
 
     registrarTransacao(novaTransacao: Transacao): void {

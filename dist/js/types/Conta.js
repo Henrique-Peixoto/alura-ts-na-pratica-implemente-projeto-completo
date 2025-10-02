@@ -1,10 +1,15 @@
 import { TipoTransacao } from "./TipoTransacao.js";
-let saldo = JSON.parse(localStorage.getItem('saldo') || '{}') || 0;
-let transacoes = JSON.parse(localStorage.getItem("transacoes") || '[]', (key, value) => {
-    if (key === 'data')
-        return new Date(value);
-    return value;
-}) || [];
+let saldo = 0;
+// if (localStorage.getItem('saldo') != null) {
+//     saldo = JSON.parse(localStorage.getItem('saldo')!)
+// }
+let transacoes = [];
+// if (localStorage.getItem('transacoes') != null) {
+//     transacoes = JSON.parse(localStorage.getItem('transacoes')!, (key, value) => {
+//         if (key === 'data') return new Date(value)
+//         return value
+//     })
+// }
 function debitar(valor) {
     if (valor <= 0) {
         throw new Error("O valor a ser debitado deve ser maior que zero.");
@@ -48,6 +53,27 @@ const Conta = {
             gruposTransacoes.at(-1)?.transacoes.push(transacao);
         }
         return gruposTransacoes;
+    },
+    getTransacoesPorTipo() {
+        let resumo = {
+            totalDepositos: 0,
+            totalPagamentosBoleto: 0,
+            totalTransferencias: 0
+        };
+        for (let transacao of transacoes) {
+            switch (transacao.tipoTransacao) {
+                case TipoTransacao.DEPOSITO:
+                    resumo.totalDepositos += transacao.valor;
+                    break;
+                case TipoTransacao.PAGAMENTO_BOLETO:
+                    resumo.totalPagamentosBoleto += transacao.valor;
+                    break;
+                case TipoTransacao.TRANSFERENCIA:
+                    resumo.totalTransferencias += transacao.valor;
+                    break;
+            }
+        }
+        return resumo;
     },
     registrarTransacao(novaTransacao) {
         if (novaTransacao.tipoTransacao === TipoTransacao.DEPOSITO) {
